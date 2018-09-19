@@ -1,0 +1,2 @@
+# AccessibilityServiceDemo
+这是一个AccessibilityService练习项目，实现了微信消息自动回复功能
