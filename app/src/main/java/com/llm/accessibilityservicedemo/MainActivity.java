@@ -15,6 +15,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private Button button;
+    private Button closeButton;
     private TextView logTv;
     StringBuilder stringBuilder;
 
@@ -32,12 +33,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         stringBuilder = new StringBuilder();
         button = findViewById(R.id.my_button);
         button.setOnClickListener(this);
+        closeButton = findViewById(R.id.close_bt);
+        closeButton.setOnClickListener(this);
         logTv = findViewById(R.id.log_tv);
     }
 
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.my_button) {
+            goAccess();
+        } else if (view.getId() == R.id.close_bt) {
             goAccess();
         }
     }

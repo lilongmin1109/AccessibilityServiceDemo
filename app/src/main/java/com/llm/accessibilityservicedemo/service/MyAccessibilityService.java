@@ -46,7 +46,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 eventTypeName = "TYPE_NOTIFICATION_STATE_CHANGED";
 
                 if (PhoneController.isLockScreen(this)) { // 锁屏
-                    PhoneController.wakeUpAndUnlock(this);   // 唤醒点亮屏幕  //TODO 没有效果
+                    PhoneController.unlock(this);   // 唤醒点亮屏幕  //TODO 没有效果
                 }
                 openAppByNotification(event);
                 hasNotify = true;
@@ -85,8 +85,12 @@ public class MyAccessibilityService extends AccessibilityService {
             case AccessibilityEvent.TYPE_VIEW_HOVER_EXIT:
                 eventTypeName = "TYPE_VIEW_HOVER_EXIT";
                 break;
-            case AccessibilityEvent.TYPE_VIEW_SCROLLED:
+            case AccessibilityEvent.TYPE_VIEW_SCROLLED://界面滚动
                 eventTypeName = "TYPE_VIEW_SCROLLED";
+
+                //如果在当前界面直接发送消息
+//                sendMessage();
+
                 break;
             case AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED:
                 eventTypeName = "TYPE_VIEW_TEXT_SELECTION_CHANGED";
@@ -116,6 +120,32 @@ public class MyAccessibilityService extends AccessibilityService {
 
 
     /**
+     * 查找最后一条聊天信息
+     *
+     * @param rootNode
+     * @param reply
+     * @return
+     */
+    private boolean findLastTextStr(AccessibilityNodeInfo rootNode, String reply) {
+        int count = rootNode.getChildCount();
+        Log.e(TAG, "LastText root class=" + rootNode.getClassName() + ", " + rootNode.getText() + ", child: " + count);
+        for (int i = 0; i < count; i++) {
+            AccessibilityNodeInfo node = rootNode.getChild(i);
+            if (UI.EDITTEXT.equals(node.getClassName())) {   // 找到输入框并输入文本
+                Log.e(TAG, "****found the EditText");
+                fillText(node, reply);
+                return true;
+            }
+
+            if (findInputBar(node, reply)) {    // 递归查找
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
      * 自动回复入口
      */
     private void autoReply() {
@@ -125,19 +155,26 @@ public class MyAccessibilityService extends AccessibilityService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (fillInputBar(Config.AutoReplyText)) {
-                //查找发送按钮并点击
-                findAndPerformAction(UI.BUTTON, "发送");
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);   // 返回
-                    }
-                }, 800);
-
-            }
-            hasNotify = false;
+            sendMessage();
         }
+    }
+
+    /**
+     * 填充信息与点击发送按钮
+     */
+    private void sendMessage() {
+        if (fillInputBar(Config.AutoReplyText)) {
+            //查找发送按钮并点击
+            findAndPerformAction(UI.BUTTON, "发送");
+//            handler.postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);   // 返回
+//                }
+//            }, 800);
+
+        }
+        hasNotify = false;
     }
 
     /**
@@ -253,6 +290,14 @@ public class MyAccessibilityService extends AccessibilityService {
                     node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 }
             }
+    }
+
+
+    /**
+     * 关闭辅助功能
+     */
+    private void closeService() {
+
     }
 
 }
